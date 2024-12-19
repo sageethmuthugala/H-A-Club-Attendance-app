@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f3f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 700px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h1, h2 {
+            color: #2980b9;
+        }
+        input, select, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        hr {
+            border: none;
+            height: 1px;
+            background-color: #ddd;
+            margin: 20px 0;
+        }
+        .project-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .project-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+
+        <!-- Add Project Section -->
+        <h2>Assign Project</h2>
+        <input type="text" id="candidate-id" placeholder="Candidate ID">
+        <input type="text" id="project-name" placeholder="Project Name">
+        <input type="date" id="project-date">
+        <input type="time" id="project-time">
+        <input type="text" id="project-venue" placeholder="Project Venue">
+        <button class="btn" onclick="addProject()">Add Project</button>
+
+        <hr>
+
+        <!-- Mark Attendance Section -->
+        <h2>Mark Attendance</h2>
+        <input type="text" id="attendance-candidate-id" placeholder="Candidate ID">
+        <input type="date" id="attendance-date">
+        <select id="attendance-status">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+        </select>
+        <button class="btn" onclick="markAttendance()">Mark Attendance</button>
+
+        <hr>
+
+        <!-- View and Delete Projects Section -->
+        <h2>View and Delete Projects</h2>
+        <div class="project-list" id="project-list"></div>
+
+        <hr>
+
+        <!-- Download Attendance Button -->
+        <h2>Download Attendance</h2>
+        <button class="btn" onclick="downloadAttendance()">Download Attendance</button>
+    </div>
+
+    <script>
+        // Add a Project
+        function addProject() {
+            const candidateId = document.getElementById("candidate-id").value.trim().toUpperCase();
+            const projectName = document.getElementById("project-name").value;
+            const projectDate = document.getElementById("project-date").value;
+            const projectTime = document.getElementById("project-time").value;
+            const projectVenue = document.getElementById("project-venue").value;
+
+            if (!candidateId || !projectName || !projectDate || !projectTime || !projectVenue) {
+                alert("Please fill all fields for the project.");
+                return;
+            }
+
+            const newProject = {
+                id: Date.now(), // Unique ID for deletion
+                candidateId,
+                projectName,
+                projectDate,
+                projectTime,
+                projectVenue
+            };
+
+            const projects = JSON.parse(localStorage.getItem("projects")) || [];
+            projects.push(newProject);
+            localStorage.setItem("projects", JSON.stringify(projects));
+
+            alert("Project added successfully!");
+            clearProjectForm();
+            displayProjects();
+        }
+
+        // Clear Project Form
+        function clearProjectForm() {
+            document.getElementById("candidate-id").value = "";
+            document.getElementById("project-name").value = "";
+            document.getElementById("project-date").value = "";
+            document.getElementById("project-time").value = "";
+            document.getElementById("project-venue").value = "";
+        }
+
+        // Display Projects
+        function displayProjects() {
+            const projectList = document.getElementById("project-list");
+            const projects = JSON.parse(localStorage.getItem("projects")) || [];
+
+            if (projects.length === 0) {
+                projectList.innerHTML = "<p>No projects added yet.</p>";
+                return;
+            }
+
+            projectList.innerHTML = ""; // Clear previous list
+
+            projects.forEach((project) => {
+                const projectItem = document.createElement("div");
+                projectItem.className = "project-item";
+                projectItem.innerHTML = `  
+                    <div>
+                        <strong>${project.projectName}</strong><br>
+                        Candidate ID: ${project.candidateId}<br>
+                        Date: ${project.projectDate} | Time: ${project.projectTime}<br>
+                        Venue: ${project.projectVenue}
+                    </div>
+                    <button class="delete-btn" onclick="deleteProject(${project.id})">Delete</button>
+                `;
+                projectList.appendChild(projectItem);
+            });
+        }
+
+        // Delete a Project
+        function deleteProject(projectId) {
+            let projects = JSON.parse(localStorage.getItem("projects")) || [];
+            projects = projects.filter(project => project.id !== projectId);
+            localStorage.setItem("projects", JSON.stringify(projects));
+
+            alert("Project deleted successfully!");
+            displayProjects();
+        }
+
+        // Mark Attendance
+        function markAttendance() {
+            const candidateId = document.getElementById("attendance-candidate-id").value.trim().toUpperCase();
+            const attendanceDate = document.getElementById("attendance-date").value;
+            const attendanceStatus = document.getElementById("attendance-status").value;
+
+            if (!candidateId || !attendanceDate || !attendanceStatus) {
+                alert("Please fill all fields for attendance.");
+                return;
+            }
+
+            const newAttendance = {
+                candidateId,
+                attendanceDate,
+                attendanceStatus
+            };
+
+            const attendanceRecords = JSON.parse(localStorage.getItem("attendance")) || [];
+            attendanceRecords.push(newAttendance);
+            localStorage.setItem("attendance", JSON.stringify(attendanceRecords));
+
+            alert(`Attendance for Candidate ${candidateId} marked as ${attendanceStatus}.`);
+            clearAttendanceForm();
+        }
+
+        // Clear Attendance Form
+        function clearAttendanceForm() {
+            document.getElementById("attendance-candidate-id").value = "";
+            document.getElementById("attendance-date").value = "";
+            document.getElementById("attendance-status").value = "Present";
+        }
+
+        // Download Attendance as CSV
+        function downloadAttendance() {
+            const attendanceRecords = JSON.parse(localStorage.getItem("attendance")) || [];
+            let csvContent = "Candidate ID, Date, Status\n";
+
+            attendanceRecords.forEach(record => {
+                csvContent += `${record.candidateId}, ${record.attendanceDate}, ${record.attendanceStatus}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", "attendance.csv");
+                link.click();
+            }
+        }
+
+        // Initial Load of Projects
+        displayProjects();
+    </script>
+</body>
+</html>

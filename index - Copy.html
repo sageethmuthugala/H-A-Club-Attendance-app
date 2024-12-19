@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f3f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 700px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h1 {
+            color: #2980b9;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #2980b9;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Candidate Dashboard</h1>
+        <input type="text" id="candidate-id" placeholder="Enter Candidate ID">
+        <button class="btn" onclick="loginCandidate()">Login</button>
+        <div id="project-list"></div>
+    </div>
+
+    <script>
+        function loginCandidate() {
+            const candidateID = document.getElementById("candidate-id").value.trim().toUpperCase();
+            const projects = JSON.parse(localStorage.getItem("projects")) || [];
+
+            const filteredProjects = projects.filter(project => project.candidateId === candidateID);
+
+            const projectListDiv = document.getElementById("project-list");
+
+            if (filteredProjects.length > 0) {
+                let tableHTML = `
+                    <h2>Your Projects</h2>
+                    <table>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Venue</th>
+                        </tr>`;
+
+                filteredProjects.forEach(project => {
+                    tableHTML += `
+                        <tr>
+                            <td>${project.projectName}</td>
+                            <td>${project.projectDate}</td>
+                            <td>${project.projectTime}</td>
+                            <td>${project.projectVenue}</td>
+                        </tr>`;
+                });
+
+                tableHTML += `</table>`;
+                projectListDiv.innerHTML = tableHTML;
+            } else {
+                projectListDiv.innerHTML = `<p>No projects assigned to ID: <b>${candidateID}</b></p>`;
+            }
+        }
+    </script>
+</body>
+</html>
